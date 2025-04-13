@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SECURITY BREACH DETECTED</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: black;
+            color: #00ff00;
+            text-align: center;
+            padding: 20px;
+            overflow: hidden;
+            margin: 0;
+            cursor: none; /* Hide cursor */
+        }
+        
+        /* Hide all cursors completely */
+        * {
+            cursor: none !important;
+        }
+        
+        /* Make sure the custom cursor is also hidden */
+        #customCursor {
+            display: none !important;
+            visibility: hidden !important;
+        }
+        
+        .container {
+            position: relative;
+            z-index: 100;
+        }
+        
+        .warning {
+            font-size: 36px;
+            color: red;
+            font-weight: bold;
+            margin-top: 20px;
+            text-shadow: 0 0 10px #ff0000;
+            animation: pulse 1s infinite;
+        }
+        
+        .info {
+            font-size: 18px;
+            margin-top: 10px;
+        }
+        
+        .glitch {
+            animation: glitch 1s linear infinite;
+        }
+        
+        #customCursor {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><circle cx="15" cy="15" r="15" fill="red" /></svg>');
+            pointer-events: none;
+            z-index: 9999;
+        }
+        
+        #countdown {
+            font-size: 48px;
+            color: red;
+            margin: 20px auto;
+        }
+        
+        #webcamFeed {
+            width: 320px;
+            height: 240px;
+            margin: 20px auto;
+            border: 3px solid red;
+            display: none;
+        }
+        
+        .log {
+            font-family: 'Courier New', monospace;
+            color: #00ff00;
+            text-align: left;
+            background-color: rgba(0,0,0,0.7);
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 20px auto;
+            border: 1px solid #00ff00;
+            width: 80%;
+        }
+        
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-5px, 5px); }
+            40% { transform: translate(-5px, -5px); }
+            60% { transform: translate(5px, 5px); }
+            80% { transform: translate(5px, -5px); }
+            100% { transform: translate(0); }
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        
+        .flicker {
+            animation: flicker 0.3s infinite;
+        }
+        
+        @keyframes flicker {
+            0% { opacity: 1; }
+            50% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+        
+        #fullscreenBtn {
+            background-color: red;
+            color: white;
+            border: 2px solid #00ff00;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 20px auto;
+            display: block;
+            animation: pulse 1s infinite;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrixCanvas" class="matrix-bg"></canvas>
+    
+    <div class="container flicker">
+        <h1 class="glitch">INTRUSION DETECTED</h1>
+        <p class="warning" id="warning">ACCESS VIOLATION - SECURITY PROTOCOLS ENGAGED</p>
+        <div id="countdown">30</div>
+        <p class="info">Your system has been locked. Counterintrusion measures deployed.</p>
+        
+        <button id="fullscreenBtn" style="display: none;">INITIATE FULL SECURITY SCAN</button>
+        
+        <video id="webcamFeed" autoplay></video>
+        
+        <div class="log" id="terminalLog">
+            > Initializing defensive protocols...<br>
+            > Scanning target system...<br>
+        </div>
+        
+        <div class="info" id="userinfo"></div>
+    </div>
+
+    <!-- JavaScript is in a separate file -->
+    <script src="scary-script.js"></script>
+</body>
+</html>
