@@ -288,118 +288,62 @@ async function sendEmail(transporter, emailInfo, emailParams) {
       const processedPlain = processDynamicTags(emailParams.plainMessage, emailInfo, customTagValues);
       const processedHtml = processDynamicTags(emailParams.htmlMessage, emailInfo, customTagValues);
 
-      // Generate personalized attachment for this recipient
-      let attachment = null;
+      // Create email options using nodemailer's standard format
+      const mailOptions = {
+        from: {
+          name: emailParams.senderName,
+          address: emailParams.smtpInfo.username || emailParams.smtpInfo.email || emailParams.smtpInfo.user
+        },
+        to: recipientName 
+          ? { name: recipientName, address: recipientEmail } 
+          : recipientEmail,
+        subject: processedSubject,
+        text: processedPlain || undefined,
+        html: processedHtml || undefined,
+        attachments: []
+      };
 
+      // Generate personalized attachment for this recipient
       if (emailParams.attachmentType !== 'none') {
         // Generate a fresh attachment personalized for this recipient
-        attachment = await createPersonalizedAttachment(
+        const attachment = await createPersonalizedAttachment(
           emailParams.attachmentType,
           emailParams.attachmentHtml,
           emailInfo,
           customTagValues
         );
-      }
 
-      // Define a custom boundary for the MIME message
-      const boundary = `----_NmP-${generateRandomString(14, 'alphanumeric', 'lower')}-Part_1`;
+        if (attachment) {
+          // Default filenames based on type if none provided
+          let finalAttachmentName = processedAttachmentName;
 
-      // Create email options
-      const mailOptions = {
-        envelope: {
-          from: emailParams.smtpInfo.username || emailParams.smtpInfo.email || emailParams.smtpInfo.user,
-          to: recipientEmail
-        }
-      };
-
-      // Create the raw email content with precise MIME structure
-      let rawEmail = [
-        `From: "${emailParams.senderName}" <${emailParams.smtpInfo.username || emailParams.smtpInfo.email || emailParams.smtpInfo.user}>`,
-        `To: ${recipientName ? `"${recipientName}" <${recipientEmail}>` : recipientEmail}`,
-        `Subject: ${processedSubject}`,
-        `Date: ${new Date().toUTCString()}`,
-        'MIME-Version: 1.0'
-      ];
-
-      // Set up content type based on whether we have an attachment
-      if (attachment) {
-        rawEmail.push(`Content-Type: multipart/mixed; boundary="${boundary}"`);
-        rawEmail.push('');
-
-        // Add text part
-        rawEmail.push(`--${boundary}`);
-        if (processedHtml) {
-          rawEmail.push('Content-Type: text/html; charset=utf-8');
-          rawEmail.push('Content-Transfer-Encoding: quoted-printable');
-          rawEmail.push('');
-          rawEmail.push(processedHtml);
-        } else {
-          rawEmail.push('Content-Type: text/plain; charset=utf-8');
-          rawEmail.push('Content-Transfer-Encoding: 7bit');
-          rawEmail.push('');
-          rawEmail.push(processedPlain || '');
-        }
-
-        // Add attachment part
-        rawEmail.push('');
-        rawEmail.push(`--${boundary}`);
-
-        // Default filenames based on type if none provided
-        let finalAttachmentName = processedAttachmentName;
-
-        if (!finalAttachmentName) {
-          if (emailParams.attachmentType === 'pdf') {
-            finalAttachmentName = 'document.pdf';
-          } else if (emailParams.attachmentType === 'jpeg') {
-            finalAttachmentName = 'image.jpg';
-          } else if (emailParams.attachmentType === 'png') {
-            finalAttachmentName = 'image.png';
-          } else if (emailParams.attachmentType === 'word') {
-            finalAttachmentName = 'document.doc';
+          if (!finalAttachmentName) {
+            if (emailParams.attachmentType === 'pdf') {
+              finalAttachmentName = 'document.pdf';
+            } else if (emailParams.attachmentType === 'jpeg') {
+              finalAttachmentName = 'image.jpg';
+            } else if (emailParams.attachmentType === 'png') {
+              finalAttachmentName = 'image.png';
+            } else if (emailParams.attachmentType === 'word') {
+              finalAttachmentName = 'document.doc';
+            }
           }
-        }
 
-        // Add proper extension if not already present
-        if (finalAttachmentName && !finalAttachmentName.toLowerCase().endsWith(attachment.extension)) {
-          finalAttachmentName += attachment.extension;
-        }
+          // Add proper extension if not already present
+          if (finalAttachmentName && !finalAttachmentName.toLowerCase().endsWith(attachment.extension)) {
+            finalAttachmentName += attachment.extension;
+          }
 
-        rawEmail.push(`Content-Type: ${attachment.contentType}; name="${finalAttachmentName}"`);
-        rawEmail.push('Content-Transfer-Encoding: base64');
-        rawEmail.push(`Content-Disposition: attachment; filename="${finalAttachmentName}"`);
-        rawEmail.push('');
-
-        // Split base64 content into lines of 76 characters
-        const base64Content = attachment.content.toString('base64');
-        const base64Lines = [];
-        for (let i = 0; i < base64Content.length; i += 76) {
-          base64Lines.push(base64Content.substring(i, i + 76));
-        }
-        rawEmail.push(base64Lines.join('\r\n'));
-
-        // Close the MIME message
-        rawEmail.push('');
-        rawEmail.push(`--${boundary}--`);
-      }
-      else {
-        // No attachment, just text content
-        if (processedHtml) {
-          rawEmail.push('Content-Type: text/html; charset=utf-8');
-          rawEmail.push('Content-Transfer-Encoding: quoted-printable');
-          rawEmail.push('');
-          rawEmail.push(processedHtml);
-        } else {
-          rawEmail.push('Content-Type: text/plain; charset=utf-8');
-          rawEmail.push('Content-Transfer-Encoding: 7bit');
-          rawEmail.push('');
-          rawEmail.push(processedPlain || '');
+          // Add the attachment using nodemailer's format
+          mailOptions.attachments.push({
+            filename: finalAttachmentName,
+            content: attachment.content,
+            contentType: attachment.contentType
+          });
         }
       }
 
-      // Join all parts with CRLF
-      mailOptions.raw = rawEmail.join('\r\n');
-
-      // Send the email
+      // Send the email using nodemailer's handling
       logger.info(`Sending email to ${recipientEmail}`);
       await transporter.sendMail(mailOptions);
 
