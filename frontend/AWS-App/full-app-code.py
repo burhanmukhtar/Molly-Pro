@@ -123,7 +123,7 @@ def find_optimal_region():
     # Find regions with fewer than 2 users
     available_regions = []
     for region, users in region_user_counts.items():
-        if len(users) < 3:
+        if len(users) < 4:
             available_regions.append((region, len(users)))
     
     if not available_regions:
@@ -467,7 +467,7 @@ def create_server(current_user):
         # Create the EC2 instance
         response = ec2.run_instances(
             ImageId=ami_id,
-            InstanceType='t2.medium',
+            InstanceType='t2.xlarge',
             MinCount=1,
             MaxCount=1,
             SecurityGroupIds=[security_group_id],
