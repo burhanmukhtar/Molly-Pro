@@ -51,8 +51,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Setup AWS connection
-AWS_ACCESS_KEY = "acesskey"  
-AWS_SECRET_KEY = "secretkey"
+AWS_ACCESS_KEY = ""
+AWS_SECRET_KEY = ""
 
 # Define AWS regions to use
 AWS_REGIONS = [
