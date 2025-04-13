@@ -27,13 +27,13 @@ async function getBrowser() {
     
     // Set a lower process limit based on available system memory
     const availableMemoryMB = Math.floor(os.totalmem() / (1024 * 1024));
-    const isLowMemory = availableMemoryMB < 4096; // Less than 4GB
+    //const isLowMemory = availableMemoryMB < 4096; // Less than 4GB
     
     // Calculate optimal concurrent processes
-    const optimalConcurrency = Math.max(2, Math.min(5, Math.floor(os.cpus().length * 2)));
+    const optimalConcurrency = Math.max(2, Math.min(7, Math.floor(os.cpus().length * 2)));
     
     // Only run 1 process if memory is low
-    puppeteerSemaphore.max = isLowMemory ? 2 : optimalConcurrency;
+    puppeteerSemaphore.max = optimalConcurrency;
     
     logger.info(`System memory: ${availableMemoryMB}MB, Setting puppeteer concurrency to ${puppeteerSemaphore.max}`);
     
@@ -44,26 +44,8 @@ async function getBrowser() {
       '--disable-dev-shm-usage',
       '--disable-accelerated-2d-canvas',
       '--disable-gpu',
-      '--js-flags=--expose-gc,--max-old-space-size=512'  // Limit memory per page
+      '--js-flags=--expose-gc,--max-old-space-size=1024'  // Limit memory per page
     ];
-    
-    // Add more aggressive memory optimization for low-memory systems
-    if (isLowMemory) {
-      browserArgs.push(
-        '--single-process',
-        '--disable-extensions',
-        '--disable-component-extensions-with-background-pages',
-        '--disable-default-apps',
-        '--mute-audio',
-        '--no-default-browser-check',
-        '--no-first-run',
-        '--disable-background-networking',
-        '--disable-sync',
-        '--disable-translate',
-        '--disable-web-security',
-        '--disable-features=site-per-process,TranslateUI,BlinkGenPropertyTrees'
-      );
-    }
     
     browserInstance = await puppeteer.launch({
       headless: 'new',
